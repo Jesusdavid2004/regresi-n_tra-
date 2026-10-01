@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard – Regresión lineal múltiple</title>
+<style>
+  :root {
+    --bg: #f4f1ea; --card: #fffdf8; --ink: #1f2a30; --muted: #5d6b72;
+    --line: #ddd6c8; --acc: #2a6f97; --acc-soft: #e3eef5; --warn: #9a5b13;
+    --warn-bg: #fbf0dd; --err: #a33a2a; --err-bg: #f9e3df; --success: #2f7d4a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: "Segoe UI", system-ui, -apple-system, sans-serif; line-height: 1.5; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 48px; }
+  header h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); margin: 0 0 4px; letter-spacing: -0.02em; }
+  header p { margin: 0 0 24px; color: var(--muted); }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  nav a { text-decoration: none; color: var(--ink); padding: 9px 18px; border-radius: 999px;
+          border: 1px solid var(--line); background: var(--card); font-weight: 600; }
+  nav a.activo { background: var(--acc); color: #fff; border-color: var(--acc); }
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(170px,1fr)); gap: 14px; margin: 24px 0; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .kpi .label { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi .value { margin-top: 8px; font-size: clamp(1.5rem, 2vw, 2.1rem); font-weight: 800; }
+  .grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .card h2 { font-size: 1.15rem; margin: 0 0 14px; }
+  .dashboard-section { margin-top: 26px; }
+  .model-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  .model-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+  .model-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .model-top h3 { margin: 0; font-size: 1.2rem; }
+  .score { padding: 7px 12px; border-radius: 999px; background: var(--acc-soft); color: var(--acc); font-weight: 700; }
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.88rem; color: var(--muted); margin-bottom: 10px; }
+  .equation { font-size: 0.82rem; background: #f0ebe0; border-radius: 8px; padding: 10px 12px; margin: 10px 0 16px; }
+  .gallery { display: grid; grid-template-columns: repeat(3, minmax(180px,1fr)); gap: 12px; }
+  .gallery img { width: 100%; height: 212px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
+  label { display: block; font-size: .9rem; font-weight: 600; margin: 12px 0 4px; }
+  label small { display: block; color: var(--muted); font-weight: 400; }
+  input[type=text] { width: 100%; padding: 10px 12px; font-size: 1rem; border-radius: 8px;
+          border: 1px solid var(--line); background: #fff; color: var(--ink); }
+  input:focus { outline: 2px solid var(--acc); border-color: var(--acc); }
+  button { margin-top: 18px; width: 100%; padding: 12px; font-size: 1rem; font-weight: 700;
+           border: 0; border-radius: 8px; background: var(--acc); color: #fff; cursor: pointer; }
+  button:hover { filter: brightness(1.08); }
+  .resultado { background: var(--acc-soft); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px; }
+  .resultado .num { font-size: 2.2rem; font-weight: 800; color: var(--acc); }
+  .resultado .lbl { color: var(--muted); font-size: .9rem; }
+  .msg { padding: 10px 12px; border-radius: 8px; font-size: .9rem; margin-bottom: 10px; }
+  .error { background: var(--err-bg); color: var(--err); }
+  .aviso { background: var(--warn-bg); color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  td, th { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  code { font-size: .8rem; background: #f0ebe0; padding: 6px 8px; border-radius: 6px; display: block;
+         white-space: normal; word-break: break-word; }
+  .vacio { color: var(--muted); text-align: center; padding: 18px 0; }
+  footer { color: var(--muted); font-size: .8rem; margin-top: 24px; text-align: center; }
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, minmax(150px,1fr)); }
+    .grid { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .kpis { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Dashboard de análisis y predicción</h1>
+    <p>Resumen general del proyecto, rendimiento de cada modelo y acceso directo a las predicciones.</p>
+  </header>
+
+  <nav>
+    <a href="/" class="activo">Dashboard</a>
+    {% for k, n in nombres.items() %}
+      <a href="/?ejercicio={{ k }}" class="{{ 'activo' if k == clave }}">{{ n }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="kpis">
+    <div class="kpi">
+      <div class="label">Modelos</div>
+      <div class="value">{{ dashboard.modelos|length }}</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Registros</div>
+      <div class="value">{{ '{:,.0f}'.format(dashboard.total_registros) }}</div>
+    </div>
+    <div class="kpi">
+      <div class="label">R² promedio</div>
+      <div class="value">{{ '%.2f'|format(dashboard.promedio_r2) }}</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Mejor modelo</div>
+      <div class="value" style="font-size:1.05rem;">{{ dashboard.mejor.titulo if dashboard.mejor else 'N/A' }}</div>
+    </div>
+  </section>
+
+  <section class="dashboard-section">
+    <div class="model-grid">
+      {% for item in dashboard.modelos %}
+        <article class="model-card">
+          <div class="model-top">
+            <h3>{{ item.titulo }}</h3>
+            <span class="score">R² {{ '%.4f'|format(item.r2) }}</span>
+          </div>
+          <div class="stats">
+            <span>Registros: {{ item.n_registros }}</span>
+            <span>RMSE: {{ '%.2f'|format(item.rmse) }}</span>
+            <span>Mayor impacto: {{ item.impacto }}</span>
+          </div>
+          <div class="equation">{{ item.ecuacion }}</div>
+          <div class="gallery">
+            <img src="{{ item.imagen_real }}" alt="Real vs predicho {{ item.titulo }}">
+            <img src="{{ item.imagen_importancia }}" alt="Importancia {{ item.titulo }}">
+            <img src="{{ item.imagen_correlacion }}" alt="Correlación {{ item.titulo }}">
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="grid" style="margin-top:26px;">
+    <form class="card" method="post" action="/" autocomplete="off">
+      <h2>{{ paq.titulo }}</h2>
+      <input type="hidden" name="ejercicio" value="{{ clave }}">
+      <input type="hidden" name="accion" value="predecir">
+      {% for f in paq.features %}
+        {% set r = paq.rangos[f] %}
+        <label for="{{ f }}">{{ campos[f].etiqueta }}
+          <small>Rango en los datos: {{ '%.4g'|format(r.min) }} – {{ '%.4g'|format(r.max) }}</small>
+        </label>
+        <input type="text" inputmode="decimal" id="{{ f }}" name="{{ f }}" required
+               value="{{ valores[f] }}" placeholder="ej. {{ '%.4g'|format(r.media) }}">
+      {% endfor %}
+      <button type="submit">Predecir {{ paq.target.replace('_', ' ') }}</button>
+    </form>
+
+    <div class="card">
+      <h2>Resultado</h2>
+      {% if error %}<div class="msg error">{{ error }}</div>{% endif %}
+      {% if resultado is not none %}
+        <div class="resultado">
+          <div class="lbl">{{ paq.target.replace('_', ' ') }} estimado</div>
+          <div class="num">{{ '{:,.2f}'.format(resultado) }}</div>
+          <div class="lbl">{{ paq.unidad }} · error típico ± {{ '%.2f'|format(paq.metricas.prueba.RMSE) }}</div>
+        </div>
+        {% for a in avisos %}<div class="msg aviso">{{ a }}</div>{% endfor %}
+      {% elif not error %}
+        <p class="vacio">Ingrese los datos y presione “Predecir”.</p>
+      {% endif %}
+
+      <h2 style="margin-top:18px">Modelo</h2>
+      <code>{{ paq.target }} = {{ '%.4f'|format(paq.intercepto) }}{% for c in paq.coeficientes %} {{ '+' if c.coeficiente >= 0 else '−' }} {{ '%.4f'|format(c.coeficiente|abs) }}·{{ c.variable }}{% endfor %}</code>
+      <table style="margin-top:12px">
+        <tr><th>Métrica (prueba)</th><th class="n">Valor</th></tr>
+        <tr><td>R²</td><td class="n">{{ '%.4f'|format(paq.metricas.prueba.R2) }}</td></tr>
+        <tr><td>MSE</td><td class="n">{{ '%.2f'|format(paq.metricas.prueba.MSE) }}</td></tr>
+        <tr><td>RMSE</td><td class="n">{{ '%.2f'|format(paq.metricas.prueba.RMSE) }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>Minería de datos · CRISP-DM · Modelos scikit-learn exportados con joblib</footer>
+</div>
+</body>
+</html>

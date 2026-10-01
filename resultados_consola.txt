@@ -1,0 +1,190 @@
+
+========================================================================
+EJERCICIO: PREDICCIÓN DEL PRECIO DEL DÓLAR
+========================================================================
+
+--- Fase 2: Comprensión de los datos ---
+Registros: 500 | Columnas: ['Dia', 'Inflacion', 'Tasa_interes', 'Precio_Dolar']
+
+Valores nulos por columna:
+ Dia             0
+Inflacion       0
+Tasa_interes    0
+Precio_Dolar    0
+
+Filas duplicadas: 0
+
+Estadística descriptiva:
+             Dia  Inflacion  Tasa_interes  Precio_Dolar
+count  500.0000   500.0000      500.0000      500.0000
+mean   250.5000     0.0200        5.0159     5211.7719
+std    144.4818     0.0049        0.4890      723.8952
+min      1.0000     0.0038        3.6516     3940.3613
+25%    125.7500     0.0165        4.7024     4604.8850
+50%    250.5000     0.0201        5.0143     5218.7911
+75%    375.2500     0.0232        5.3256     5825.2353
+max    500.0000     0.0393        6.3162     6553.5986
+
+Correlación de Pearson con la variable objetivo:
+ Dia             0.9976
+Inflacion       0.0196
+Tasa_interes    0.0743
+
+--- Fase 3: Preparación de los datos ---
+Limpieza: 500 -> 500 registros (sin nulos, no numéricos ni duplicados)
+Partición 80/20 -> entrenamiento: 400, prueba: 100
+
+--- Fase 4: Modelado (regresión lineal múltiple) ---
+Ecuación: Precio_Dolar = 3985.7833 + 4.9843·Dia - 870.7317·Inflacion - 1.3774·Tasa_interes
+              coeficiente   error_std           t   p_valor  beta_estandarizado
+variable                                                                       
+Dia              4.984339    0.018255  273.032205  0.000000            0.997568
+Inflacion     -870.731708  521.801318   -1.668704  0.095967           -0.006083
+Tasa_interes    -1.377431    5.357913   -0.257084  0.797248           -0.000941
+
+--- Fase 5: Evaluación ---
+             entrenamiento     prueba
+MSE              2580.4620  2376.9709
+RMSE               50.7982    48.7542
+MAE                40.4687    37.0065
+R2                  0.9948     0.9963
+R2_ajustado         0.9947        NaN
+
+Interpretación:
+- Dia: por cada unidad adicional, Precio_Dolar aumenta 4.9843 pesos (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = 0.998.
+- Inflacion: por cada unidad adicional, Precio_Dolar disminuye 870.7317 pesos (resto constante). NO significativo (p ≥ 0,05), p = 0.096; beta estandarizado = -0.006.
+- Tasa_interes: por cada unidad adicional, Precio_Dolar disminuye 1.3774 pesos (resto constante). NO significativo (p ≥ 0,05), p = 0.797; beta estandarizado = -0.001.
+- Mayor impacto: Dia. Orden: Dia > Inflacion > Tasa_interes.
+- Prueba: R² = 0.9963 (99.6% de la variabilidad explicada), MSE = 2376.9709, RMSE = 48.7542 pesos.
+
+--- Fase 6: Despliegue (exportación del modelo) ---
+Modelo exportado en: /home/claude/proyecto_regresion/modelos/modelo_dolar.joblib
+Carga verificada -> predicción con valores promedio: 5210.0067 pesos
+
+========================================================================
+EJERCICIO: PREDICCIÓN DEL NIVEL DE GLUCOSA EN SANGRE
+========================================================================
+
+--- Fase 2: Comprensión de los datos ---
+Registros: 2000 | Columnas: ['Edad', 'IMC', 'Actividad_Fisica', 'Nivel_Glucosa']
+
+Valores nulos por columna:
+ Edad                0
+IMC                 0
+Actividad_Fisica    0
+Nivel_Glucosa       0
+
+Filas duplicadas: 0
+
+Estadística descriptiva:
+             Edad        IMC  Actividad_Fisica  Nivel_Glucosa
+count  2000.0000  2000.0000         2000.0000      2000.0000
+mean     49.1570    24.9633            4.6645       139.6301
+std      17.5445     3.9836            2.9122        27.3429
+min      20.0000    10.5867            0.0000        43.4159
+25%      34.0000    22.3445            2.0000       119.0676
+50%      50.0000    25.0287            5.0000       139.9673
+75%      64.0000    27.7511            7.0000       159.2085
+max      79.0000    39.4302            9.0000       227.5607
+
+Correlación de Pearson con la variable objetivo:
+ Edad                0.7898
+IMC                 0.1383
+Actividad_Fisica   -0.1984
+
+--- Fase 3: Preparación de los datos ---
+Limpieza: 2000 -> 2000 registros (sin nulos, no numéricos ni duplicados)
+Partición 80/20 -> entrenamiento: 1600, prueba: 400
+
+--- Fase 4: Modelado (regresión lineal múltiple) ---
+Ecuación: Nivel_Glucosa = 65.8609 + 1.2266·Edad + 0.9334·IMC - 2.0853·Actividad_Fisica
+                  coeficiente  error_std          t  p_valor  beta_estandarizado
+variable                                                                        
+Edad                 1.226590   0.021849  56.139553      0.0            0.787366
+IMC                  0.933373   0.096340   9.688330      0.0            0.135878
+Actividad_Fisica    -2.085276   0.131209 -15.892809      0.0           -0.222882
+
+--- Fase 5: Evaluación ---
+             entrenamiento    prueba
+MSE               235.5137  233.6930
+RMSE               15.3465   15.2870
+MAE                12.1093   12.2198
+R2                  0.6862    0.6814
+R2_ajustado         0.6856       NaN
+
+Interpretación:
+- Edad: por cada unidad adicional, Nivel_Glucosa aumenta 1.2266 mg/dL (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = 0.787.
+- IMC: por cada unidad adicional, Nivel_Glucosa aumenta 0.9334 mg/dL (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = 0.136.
+- Actividad_Fisica: por cada unidad adicional, Nivel_Glucosa disminuye 2.0853 mg/dL (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = -0.223.
+- Mayor impacto: Edad. Orden: Edad > Actividad_Fisica > IMC.
+- Prueba: R² = 0.6814 (68.1% de la variabilidad explicada), MSE = 233.6930, RMSE = 15.2870 mg/dL.
+
+--- Fase 6: Despliegue (exportación del modelo) ---
+Modelo exportado en: /home/claude/proyecto_regresion/modelos/modelo_glucosa.joblib
+Carga verificada -> predicción con valores promedio: 139.7297 mg/dL
+
+========================================================================
+EJERCICIO: PREDICCIÓN DEL CONSUMO DE ENERGÍA ELÉCTRICA
+========================================================================
+
+--- Fase 2: Comprensión de los datos ---
+Registros: 10000 | Columnas: ['Temperatura', 'Hora', 'Dia_Semana', 'Consumo_Energia']
+
+Valores nulos por columna:
+ Temperatura        0
+Hora               0
+Dia_Semana         0
+Consumo_Energia    0
+
+Filas duplicadas: 0
+
+Estadística descriptiva:
+        Temperatura        Hora  Dia_Semana  Consumo_Energia
+count   10000.0000  10000.0000  10000.0000       10000.0000
+mean       24.9248     12.4936      3.9994         400.0435
+std         5.0040      6.9213      2.0000          63.8252
+min         5.3880      1.0000      1.0000         185.1964
+25%        21.5785      6.0000      2.0000         356.7353
+50%        24.9005     12.0000      4.0000         399.2704
+75%        28.3110     18.0000      6.0000         443.1341
+max        44.6312     24.0000      7.0000         631.0932
+
+Correlación de Pearson con la variable objetivo:
+ Temperatura    0.7719
+Hora           0.5290
+Dia_Semana    -0.1022
+
+--- Fase 3: Preparación de los datos ---
+Limpieza: 10000 -> 10000 registros (sin nulos, no numéricos ni duplicados)
+Partición 80/20 -> entrenamiento: 8000, prueba: 2000
+
+--- Fase 4: Modelado (regresión lineal múltiple) ---
+Ecuación: Consumo_Energia = 101.2882 + 9.9529·Temperatura + 5.0198·Hora - 3.0312·Dia_Semana
+             coeficiente  error_std           t  p_valor  beta_estandarizado
+variable                                                                    
+Temperatura     9.952866   0.044788  222.220981      0.0            0.780290
+Hora            5.019813   0.032258  155.613910      0.0            0.546407
+Dia_Semana     -3.031177   0.111509  -27.183162      0.0           -0.095432
+
+--- Fase 5: Evaluación ---
+             entrenamiento    prueba
+MSE               399.1937  429.5187
+RMSE               19.9798   20.7248
+MAE                15.9174   16.5101
+R2                  0.9015    0.8968
+R2_ajustado         0.9014       NaN
+
+Interpretación:
+- Temperatura: por cada unidad adicional, Consumo_Energia aumenta 9.9529 kWh (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = 0.780.
+- Hora: por cada unidad adicional, Consumo_Energia aumenta 5.0198 kWh (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = 0.546.
+- Dia_Semana: por cada unidad adicional, Consumo_Energia disminuye 3.0312 kWh (resto constante). significativo (p < 0,05), p = 0; beta estandarizado = -0.095.
+- Mayor impacto: Temperatura. Orden: Temperatura > Hora > Dia_Semana.
+- Prueba: R² = 0.8968 (89.7% de la variabilidad explicada), MSE = 429.5187, RMSE = 20.7248 kWh.
+
+--- Fase 6: Despliegue (exportación del modelo) ---
+Modelo exportado en: /home/claude/proyecto_regresion/modelos/modelo_energia.joblib
+Carga verificada -> predicción con valores promedio: 399.9540 kWh
+
+========================================================================
+Listo: modelos/ (joblib), graficas/ (png), resultados/ (json, md)
+========================================================================

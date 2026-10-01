@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f2">
+  <title>Laboratorio de predicción</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f5f2;
+      --surface: #fff;
+      --ink: #202b2a;
+      --muted: #64716e;
+      --line: #d9e0dc;
+      --green: #126b58;
+      --green-dark: #0d5143;
+      --green-pale: #e5f2ec;
+      --orange: #bd552f;
+      --orange-pale: #f9eee8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    .page { max-width: 1080px; margin: auto; padding: 34px 24px 54px; }
+    .masthead { display: flex; justify-content: space-between; gap: 24px; align-items: end; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 600px; margin-bottom: 4px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 500; line-height: 1.08; }
+    .intro { max-width: 530px; margin: 10px 0 0; color: var(--muted); }
+    .status { flex: 0 0 auto; color: var(--muted); font-size: .78rem; }
+    .status::before { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #32805c; content: ""; }
+    main { padding-top: 26px; }
+    .model-picker { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .model-picker label { font-size: .85rem; font-weight: 700; }
+    select, input {
+      width: 100%; min-height: 44px; border: 1px solid #bdcac4; border-radius: 5px;
+      background: var(--surface); color: var(--ink); font: inherit;
+    }
+    select { max-width: 340px; padding: 8px 38px 8px 12px; font-weight: 700; }
+    input { padding: 9px 12px; font-variant-numeric: tabular-nums; }
+    select:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid #85b6a6; outline-offset: 2px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, .82fr); border: 1px solid var(--line); background: var(--surface); }
+    .form-panel, .output-panel { padding: 26px; }
+    .form-panel { border-right: 1px solid var(--line); }
+    h2 { margin-bottom: 4px; font-family: Georgia, "Times New Roman", serif; font-size: 1.55rem; font-weight: 500; }
+    .section-note { margin-bottom: 20px; color: var(--muted); font-size: .88rem; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 14px; }
+    .field label { display: block; margin-bottom: 5px; font-size: .82rem; font-weight: 700; }
+    .field small { display: block; min-height: 18px; margin-top: 3px; color: var(--muted); font-size: .72rem; }
+    button { min-height: 46px; width: 100%; margin-top: 18px; border: 0; border-radius: 5px; background: var(--green); color: white; cursor: pointer; font: inherit; font-weight: 800; }
+    button:hover { background: var(--green-dark); }
+    .output-panel { display: flex; flex-direction: column; }
+    .output-label { margin: 22px 0 2px; color: var(--muted); font-size: .82rem; }
+    .output-number { margin: 0; color: var(--green-dark); font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.3rem, 5vw, 3.4rem); line-height: 1.15; overflow-wrap: anywhere; }
+    .output-unit { color: var(--muted); font-size: .88rem; }
+    .empty { margin: 22px 0 4px; padding: 14px; border-left: 3px solid #a8bdb3; background: #f4f7f4; color: var(--muted); font-size: .88rem; }
+    .error { margin: 14px 0 0; padding: 11px 13px; border-left: 3px solid var(--orange); background: var(--orange-pale); color: #78391f; font-size: .86rem; }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: auto; padding-top: 28px; }
+    .metric { padding-top: 10px; border-top: 1px solid var(--line); }
+    .metric span { display: block; color: var(--muted); font-size: .75rem; }
+    .metric strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
+    .equation { margin: 16px 0 0; padding: 12px 14px; border-left: 3px solid var(--green); background: var(--green-pale); font-size: .8rem; overflow-wrap: anywhere; }
+    .equation span { display: block; margin-bottom: 4px; color: var(--green-dark); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .charts { margin-top: 34px; }
+    .charts-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; border-bottom: 1px solid var(--line); }
+    .charts-heading h2 { margin-bottom: 12px; }
+    .charts-heading p { margin-bottom: 12px; color: var(--muted); font-size: .8rem; }
+    .chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding-top: 16px; }
+    figure { min-width: 0; margin: 0; }
+    figure img { display: block; width: 100%; aspect-ratio: 1.35; object-fit: contain; background: white; border: 1px solid var(--line); }
+    figcaption { padding-top: 7px; color: var(--muted); font-size: .78rem; }
+    footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: .75rem; }
+    @media (max-width: 720px) {
+      .page { padding: 24px 16px 36px; }
+      .masthead { align-items: start; flex-direction: column; gap: 12px; }
+      .status { margin-top: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .form-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .chart-grid { grid-template-columns: 1fr; }
+      figure img { aspect-ratio: 1.55; }
+    }
+    @media (max-width: 440px) {
+      .form-panel, .output-panel { padding: 20px 16px; }
+      .fields { grid-template-columns: 1fr; gap: 8px; }
+      .model-picker { align-items: stretch; flex-direction: column; gap: 6px; }
+      select { max-width: none; }
+      .charts-heading { align-items: start; flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Modelos de regresión · CRISP-DM</p>
+        <h1>Laboratorio de predicción</h1>
+        <p class="intro">Ingresa los datos de un caso y calcula una estimación con los modelos entrenados.</p>
+      </div>
+      <p class="status">Modelos listos</p>
+    </header>
+
+    <main>
+      <div class="model-picker">
+        <label for="model-select">Modelo</label>
+        <select id="model-select" aria-label="Seleccionar modelo">
+          <option value="dolar">Precio del dólar</option>
+          <option value="glucosa">Nivel de glucosa</option>
+          <option value="energia">Consumo de energía</option>
+        </select>
+      </div>
+
+      <section class="workspace" aria-label="Formulario y resultado de predicción">
+        <form class="form-panel" id="prediction-form">
+          <h2 id="form-title">Predicción del precio del dólar</h2>
+          <p class="section-note">Completa las variables de entrada para obtener el valor estimado.</p>
+          <div class="fields" id="fields"></div>
+          <button type="submit">Calcular predicción</button>
+        </form>
+
+        <section class="output-panel" aria-live="polite" aria-atomic="true">
+          <h2>Resultado</h2>
+          <p class="section-note" id="target-name">Precio estimado</p>
+          <p class="empty" id="empty-state">Ingresa los datos y calcula una predicción.</p>
+          <div id="prediction" hidden>
+            <p class="output-label" id="result-label"></p>
+            <p class="output-number" id="result-number"></p>
+            <p class="output-unit" id="result-unit"></p>
+          </div>
+          <p class="error" id="error-message" role="alert" hidden></p>
+          <div class="metrics" id="metrics"></div>
+          <p class="equation" id="equation"><span>Fórmula del modelo</span><span id="equation-text"></span></p>
+        </section>
+      </section>
+
+      <section class="charts" aria-labelledby="charts-title">
+        <div class="charts-heading">
+          <h2 id="charts-title">Desempeño del modelo</h2>
+          <p id="chart-model-name"></p>
+        </div>
+        <div class="chart-grid" id="chart-grid"></div>
+      </section>
+    </main>
+
+    <footer>Las estimaciones se calculan en el navegador con los coeficientes de los modelos entrenados. No se envían datos a un servidor.</footer>
+  </div>
+
+  <script>
+    const campos = {
+      Dia: { label: "Día (número de día)", min: 1, step: 1, sample: 180 },
+      Inflacion: { label: "Inflación diaria (ej. 0.02 = 2%)", step: "any", sample: 0.03 },
+      Tasa_interes: { label: "Tasa de interés diaria (%)", step: "any", sample: 12 },
+      Edad: { label: "Edad (años)", min: 0, max: 120, step: 1, sample: 45 },
+      IMC: { label: "Índice de masa corporal (kg/m²)", min: 0, step: "any", sample: 27 },
+      Actividad_Fisica: { label: "Actividad física (horas/semana)", min: 0, step: "any", sample: 3 },
+      Temperatura: { label: "Temperatura (°C)", step: "any", sample: 25 },
+      Hora: { label: "Hora del día (1 a 24)", min: 1, max: 24, step: 1, sample: 18 },
+      Dia_Semana: { label: "Día de la semana (1 = lunes, 7 = domingo)", min: 1, max: 7, step: 1, sample: 3 }
+    };
+    const definiciones = {
+      dolar: { target: "Precio_Dolar", features: ["Dia", "Inflacion", "Tasa_interes"], unit: "pesos", charts: [["real_vs_predicho", "Valores reales y predichos"], ["importancia", "Importancia de variables"], ["correlacion", "Correlación"]] },
+      glucosa: { target: "Nivel_Glucosa", features: ["Edad", "IMC", "Actividad_Fisica"], unit: "mg/dL", charts: [["real_vs_predicho", "Valores reales y predichos"], ["importancia", "Importancia de variables"], ["correlacion", "Correlación"]] },
+      energia: { target: "Consumo_Energia", features: ["Temperatura", "Hora", "Dia_Semana"], unit: "kWh", charts: [["real_vs_predicho", "Valores reales y predichos"], ["importancia", "Importancia de variables"], ["correlacion", "Correlación"]] }
+    };
+    const formato = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
+    const selector = document.getElementById("model-select");
+    const form = document.getElementById("prediction-form");
+    let resultados = {};
+
+    function renderModelo() {
+      const clave = selector.value;
+      const modelo = resultados[clave];
+      const definicion = definiciones[clave];
+      if (!modelo || !definicion) return;
+
+      document.getElementById("form-title").textContent = modelo.titulo;
+      document.getElementById("target-name").textContent = `Variable estimada: ${definicion.target.replaceAll("_", " ")}`;
+      document.getElementById("fields").replaceChildren(...definicion.features.map((feature) => {
+        const config = campos[feature];
+        const wrapper = document.createElement("div");
+        wrapper.className = "field";
+        const label = document.createElement("label");
+        label.htmlFor = `field-${feature}`;
+        label.textContent = config.label;
+        const input = document.createElement("input");
+        input.id = `field-${feature}`;
+        input.name = feature;
+        input.type = "number";
+        input.required = true;
+        input.step = config.step;
+        input.value = config.sample;
+        if (config.min !== undefined) input.min = config.min;
+        if (config.max !== undefined) input.max = config.max;
+        wrapper.append(label, input);
+        return wrapper;
+      }));
+
+      const metricas = modelo.metricas.prueba;
+      document.getElementById("metrics").innerHTML = `
+        <div class="metric"><span>R² · prueba</span><strong>${new Intl.NumberFormat("es-CO", { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(metricas.R2)}</strong></div>
+        <div class="metric"><span>RMSE · error típico</span><strong>${formato.format(metricas.RMSE)} ${definicion.unit}</strong></div>
+        <div class="metric"><span>Registros de entrenamiento</span><strong>${formato.format(modelo.n_registros)}</strong></div>
+        <div class="metric"><span>Variable de mayor impacto</span><strong>${modelo.variable_mayor_impacto}</strong></div>`;
+
+      const expresion = modelo.coeficientes.reduce((texto, item) => {
+        const signo = item.coeficiente >= 0 ? "+" : "−";
+        return `${texto} ${signo} ${formato.format(Math.abs(item.coeficiente))} × ${item.variable}`;
+      }, `${definicion.target} = ${formato.format(modelo.intercepto)}`);
+      document.getElementById("equation-text").textContent = expresion;
+      document.getElementById("chart-model-name").textContent = modelo.titulo;
+      document.getElementById("chart-grid").replaceChildren(...definicion.charts.map(([tipo, titulo]) => {
+        const figure = document.createElement("figure");
+        const image = document.createElement("img");
+        image.src = `graficas/${clave}_${tipo}.png`;
+        image.alt = `${titulo}: ${modelo.titulo}`;
+        image.loading = "lazy";
+        image.onerror = () => figure.remove();
+        const caption = document.createElement("figcaption");
+        caption.textContent = titulo;
+        figure.append(image, caption);
+        return figure;
+      }));
+      document.getElementById("prediction").hidden = true;
+      document.getElementById("empty-state").hidden = false;
+      document.getElementById("error-message").hidden = true;
+    }
+
+    selector.addEventListener("change", renderModelo);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const clave = selector.value;
+      const modelo = resultados[clave];
+      const mensajeError = document.getElementById("error-message");
+      mensajeError.hidden = true;
+      try {
+        const valores = new FormData(form);
+        const prediccion = modelo.intercepto + modelo.coeficientes.reduce((suma, item) => {
+          const valor = Number(valores.get(item.variable));
+          if (!Number.isFinite(valor)) throw new Error(`Revisa el valor de ${campos[item.variable].label.toLowerCase()}.`);
+          return suma + item.coeficiente * valor;
+        }, 0);
+        if (!Number.isFinite(prediccion)) throw new Error("No se pudo calcular la predicción. Revisa los valores ingresados.");
+        document.getElementById("empty-state").hidden = true;
+        document.getElementById("prediction").hidden = false;
+        document.getElementById("result-label").textContent = `${definiciones[clave].target.replaceAll("_", " ")} estimado`;
+        document.getElementById("result-number").textContent = formato.format(prediccion);
+        document.getElementById("result-unit").textContent = `${definiciones[clave].unit} · RMSE de prueba: ${formato.format(modelo.metricas.prueba.RMSE)} ${definiciones[clave].unit}`;
+      } catch (error) {
+        mensajeError.textContent = error.message;
+        mensajeError.hidden = false;
+      }
+    });
+
+    fetch("resultados/resultados.json")
+      .then((response) => {
+        if (!response.ok) throw new Error("No se pudo cargar resultados/resultados.json.");
+        return response.json();
+      })
+      .then((data) => {
+        resultados = data;
+        renderModelo();
+      })
+      .catch((error) => {
+        document.getElementById("empty-state").textContent = `${error.message} Comprueba que la carpeta resultados esté junto a index.html.`;
+        document.querySelector(".status").textContent = "No se cargaron los modelos";
+        document.querySelector(".status").style.color = "#9b3e25";
+        form.querySelector("button").disabled = true;
+      });
+  </script>
+</body>
+</html>
