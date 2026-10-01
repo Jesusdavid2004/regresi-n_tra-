@@ -27,7 +27,7 @@ predicciones en el navegador con los coeficientes de `resultados/resultados.json
 No necesita Flask, Python ni una función de servidor en Vercel.
 
 1. Sube el proyecto a un repositorio de GitHub.
-2. En Vercel, importa el repositorio, selecciona `proyecto_regresion` como
+2. En Vercel, importa el repositorio, conserva la raíz predeterminada como
 	**Root Directory** y usa el preset **Other**.
 3. Deja vacíos el comando de compilación y el directorio de salida; despliega la
 	raíz del proyecto, donde están `index.html`, `resultados/` y `graficas/`.
